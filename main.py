@@ -57,7 +57,7 @@ def login():
         password = request.form['password']
         if username == USERNAME and password == PASSWORD:
             session['username'] = username
-            return redirect('/index')  # Redirect to index page after successful login
+            return redirect('/')  # Redirect to index page after successful login
         else:
             error = "Invalid username or password. Please try again."
     return render_template('login.html', error=error)
@@ -80,6 +80,9 @@ def prevent_redundancy(name):
 
 @app.route('/add_item', methods=['POST'])
 def add_item():
+    if 'username' not in session:
+        return redirect('/login')
+    
     name = request.form['name']
     quantity_in_stock = int(request.form['quantity_in_stock'])
     price = float(request.form['price'])
@@ -89,22 +92,26 @@ def add_item():
         item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
         inventory.append(item)
     prevent_data_loss()
-    return render_template('index.html', inventory=inventory)
+    return redirect('/')
 
 @app.route('/delete_item/<int:item_id>', methods=['POST', 'DELETE'])
 def delete_item(item_id):
+    if 'username' not in session:
+        return redirect('/login')
+    
     if request.method == 'POST' or request.method == 'DELETE':
         for item in inventory:
             if item['id'] == item_id:
                 inventory.remove(item)
                 break
         prevent_data_loss()
-        return render_template('index.html', inventory=inventory)
-    else:
-        return "Method Not Allowed", 405
+    return redirect('/')
 
-@app.route('/update', methods=['POST'])
+@app.route('/update_quantity', methods=['POST'])
 def update_quantity():
+    if 'username' not in session:
+        return redirect('/login')
+    
     item_id = int(request.form['item_id'])
     quantity_sold = int(request.form['quantity_sold'])
     for item in inventory:
@@ -113,10 +120,13 @@ def update_quantity():
             item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
             break
     prevent_data_loss()
-    return render_template('index.html', inventory=inventory)
+    return redirect('/')
 
 @app.route('/generate_report')
 def generate_report():
+    if 'username' not in session:
+        return redirect('/login')
+    
     response = make_response(create_pdf_report())
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=stock_report.pdf'
@@ -124,6 +134,9 @@ def generate_report():
 
 @app.route('/generate_sales_report')
 def generate_sales_report():
+    if 'username' not in session:
+        return redirect('/login')
+    
     response = make_response(create_sales_pdf_report())
     response.headers['Content-Type'] = 'application/pdf'
     response.headers['Content-Disposition'] = 'attachment; filename=sales_report.pdf'
