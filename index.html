@@ -27,13 +27,13 @@
             <tr>
                 <td>{{ item.name }}</td>
                 <td> <!-- Make quantity in stock changeable -->
-                    <form action="{{ url_for('update_quantity') }}" method="post">
+                    <form action="/update_quantity" method="post">
                         <input type="hidden" name="item_id" value="{{ item.id }}">
                         <input type="number" name="quantity_in_stock" value="{{ item.quantity_in_stock }}">
                         <button type="submit">Update</button>
                     </form></td>
                 <td> 
-                    <form action="{{ url_for('update_quantity') }}" method="post">
+                    <form action="/update_quantity" method="post">
                     <input type="hidden" name="item_id" value="{{ item.id }}">
                     <input type="number" name="quantity_sold" value="{{ item.quantity_sold }}">
                     <button type="submit">Update</button>
@@ -53,14 +53,14 @@
         </tbody>
     </table>
     <div class="btn-container">
-        <form action="{{ url_for('generate_report') }}" method="get" target="_blank">
+        <form action="/generate_report" method="get" target="_blank">
             <button type="submit">Generate Stock Report</button>
         </form>
     </div>
     {% endif %}
     <div class="form-container">
         <h2>Add Item</h2>
-        <form action="{{ url_for('add_item') }}" method="post">
+        <form action="/add_item" method="post">
             <label for="name">Name:</label>
             <input type="text" id="name" name="name" required>
             <label for="quantity_in_stock">Quantity in Stock:</label>
@@ -106,10 +106,10 @@
         </tbody>
     </table>
     <div class="btn-container">
-        <form action="{{ url_for('generate_sales_report') }}" method="get" target="_blank">
+        <form action="/generate_sales_report" method="get" target="_blank">
             <button type="submit">Generate Sales Report</button>
         </form>
     </div>
-      <script src="/static/script.js"></script>
+    <script src="/static/script.js"></script>
 </body>
 </html>
