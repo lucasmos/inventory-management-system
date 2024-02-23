@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hardware Shop Inventory</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>INVENTORY MANAGEMENT SYSTEM</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h1>INVENTORY MANAGEMENT SYSTEM</h1>
-    <p>Welcome, {{ session['username'] }}! <form action="/logout" method="post">
+    <p>Welcome, {{ session['username'] }}!
+    <form action="/logout" method="post">
         <button type="submit">Logout</button>
     </form></p>
     <table>
@@ -19,36 +20,35 @@
                 <th>Quantity Sold</th>
                 <th>Quantity Left</th>
                 <th>Price (KES)</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in inventory %}
             <tr>
-                <td>{{ item.name }}</td>
-                <td> <!-- Make quantity in stock changeable -->
+                <td>{{ inventory[0].name }}</td>
+                <td>
                     <form action="{{ url_for('update_quantity') }}" method="post">
-                        <input type="hidden" name="item_id" value="{{ item.id }}">
-                        <input type="number" name="quantity_in_stock" value="{{ item.quantity_in_stock }}">
+                        <input type="hidden" name="item_id" value="{{ inventory[0].id }}">
+                        <input type="number" name="quantity_in_stock" value="{{ inventory[0].quantity_in_stock }}">
                         <button type="submit">Update</button>
-                    </form></td>
-                <td> 
-                    <form action="{{ url_for('update_quantity') }}" method="post">
-                    <input type="hidden" name="item_id" value="{{ item.id }}">
-                    <input type="number" name="quantity_sold" value="{{ item.quantity_sold }}">
-                    <button type="submit">Update</button>
                     </form>
                 </td>
-                <td>{{ item.quantity_left }}</td>
-                <td>{{ item.price }}</td>
                 <td>
-                    <!-- Delete button for each row -->
-                    <form action="/delete_item/{{ item.id }}" method="post">
+                    <form action="{{ url_for('update_quantity') }}" method="post">
+                        <input type="hidden" name="item_id" value="{{ inventory[0].id }}">
+                        <input type="number" name="quantity_sold" value="{{ inventory[0].quantity_sold }}">
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+                <td>{{ inventory[0].quantity_left }}</td>
+                <td>{{ inventory[0].price }}</td>
+                <td>
+                    <form action="/delete_item/{{ inventory[0].id }}" method="post">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit">Delete</button>
                     </form>
                 </td>
             </tr>
-            {% endfor %}
         </tbody>
     </table>
     <div class="btn-container">
@@ -56,7 +56,6 @@
             <button type="submit">Generate Stock Report</button>
         </form>
     </div>
-    {% endif %}
     <div class="form-container">
         <h2>Add Item</h2>
         <form action="{{ url_for('add_item') }}" method="post">
@@ -70,7 +69,6 @@
         </form>
     </div>
 
-    <!-- Sales Table -->
     <h2>Items Sold</h2>
     <table>
         <thead>
@@ -80,28 +78,23 @@
                 <th>Price Per Item (KES)</th>
                 <th>Total Cost (KES)</th>
                 <th>Date Sold</th>
-                <th>Action</th> <!-- New column for Delete button -->
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for item in inventory %}
-            {% if item.quantity_sold > 0 %}
             <tr>
-                <td>{{ item.name }}</td>
-                <td>{{ item.quantity_sold }}</td>
-                <td>{{ item.price }}</td>
-                <td>{{ item.quantity_sold * item.price }}</td>
-                <td>{{ item.date_sold }}</td>
+                <td>{{ inventory[0].name }}</td>
+                <td>{{ inventory[0].quantity_sold }}</td>
+                <td>{{ inventory[0].price }}</td>
+                <td>{{ inventory[0].quantity_sold * inventory[0].price }}</td>
+                <td>{{ inventory[0].date_sold }}</td>
                 <td>
-                    <!-- Delete button for each row -->
-                    <form action="/delete_item/{{ item.id }}" method="post">
+                    <form action="/delete_item/{{ inventory[0].id }}" method="post">
                         <input type="hidden" name="_method" value="DELETE">
                         <button type="submit">Delete</button>
                     </form>
                 </td>
             </tr>
-            {% endif %}
-            {% endfor %}
         </tbody>
     </table>
     <div class="btn-container">
@@ -109,6 +102,6 @@
             <button type="submit">Generate Sales Report</button>
         </form>
     </div>
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
