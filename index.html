@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DES AND JOE HARDWARE INVENTORY MANAGEMENT SYSTEM</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Hardware Shop Inventory</title>
+    <link rel="stylesheet" href="/static/styles.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,10 +23,6 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
-        }
-
-        .inventory-container {
-            display: none; /* Initially hiding inventory container */
         }
 
         h1 {
@@ -72,24 +68,14 @@
         button:hover {
             background-color: #45a049;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>DES AND JOE HARDWARE INVENTORY MANAGEMENT SYSTEM</h1>
-        <h2>Login</h2>
-        {% if error %}
-        <p class="error">{{ error }}</p>
-        {% endif %}
-        <form action="/login" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br>
-            <button type="submit">Login</button>
-        </form>
-    </div>
-
+    {% if 'username' in session %}
     <div class="inventory-container">
         <h1>INVENTORY MANAGEMENT SYSTEM</h1>
         <p>Welcome, {{ session['username'] }}! <form action="/logout" method="post">
@@ -103,6 +89,7 @@
                     <th>Quantity Sold</th>
                     <th>Quantity Left</th>
                     <th>Price (KES)</th>
+                    <th>Action</th> <!-- New column for Delete button -->
                 </tr>
             </thead>
             <tbody>
@@ -114,12 +101,13 @@
                             <input type="hidden" name="item_id" value="{{ item.id }}">
                             <input type="number" name="quantity_in_stock" value="{{ item.quantity_in_stock }}">
                             <button type="submit">Update</button>
-                        </form></td>
+                        </form>
+                    </td>
                     <td> 
                         <form action="/update_quantity" method="post">
-                        <input type="hidden" name="item_id" value="{{ item.id }}">
-                        <input type="number" name="quantity_sold" value="{{ item.quantity_sold }}">
-                        <button type="submit">Update</button>
+                            <input type="hidden" name="item_id" value="{{ item.id }}">
+                            <input type="number" name="quantity_sold" value="{{ item.quantity_sold }}">
+                            <button type="submit">Update</button>
                         </form>
                     </td>
                     <td>{{ item.quantity_left }}</td>
@@ -141,17 +129,23 @@
             </form>
         </div>
     </div>
-
-    <script>
-        // Script to toggle between login and inventory container
-        const loginContainer = document.querySelector('.login-container');
-        const inventoryContainer = document.querySelector('.inventory-container');
-
-        // Check if user is logged in
-        {% if 'username' in session %}
-            loginContainer.style.display = 'none';
-            inventoryContainer.style.display = 'block';
+    {% else %}
+    <div class="login-container">
+        <h1>DES AND JOE HARDWARE INVENTORY MANAGEMENT SYSTEM</h1>
+        <h2>Login</h2>
+        {% if error %}
+        <p class="error">{{ error }}</p>
         {% endif %}
-    </script>
+        <form action="/login" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required><br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required><br>
+            <button type="submit">Login</button>
+        </form>
+    </div>
+    {% endif %}
+    <script src="/static/script.js"></script>
 </body>
 </html>
+
