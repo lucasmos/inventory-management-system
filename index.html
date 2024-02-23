@@ -3,87 +3,91 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DES AND JOE HARDWARE INVENTORY MANAGEMENT SYSTEM - Login</title>
+    <title>Hardware Shop Inventory</title>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
     <link rel="stylesheet" href="styles.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .login-container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        h1 {
-            margin-bottom: 20px;
-            color: #333333;
-        }
-
-        .error {
-            color: red;
-            margin-bottom: 10px;
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        label {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        input {
-            padding: 8px;
-            margin-bottom: 15px;
-            width: 100%;
-            box-sizing: border-box;
-            border-radius: 4px;
-            border: 1px solid #cccccc;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-    </style>
 </head>
 <body>
-    <div class="login-container">
-        <h1>DES AND JOE HARDWARE INVENTORY MANAGEMENT SYSTEM</h1>
-        <h2>Login</h2>
-        {% if error %}
-        <p class="error">{{ error }}</p>
-        {% endif %}
-        <form action="/login" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required><br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required><br>
-            <button type="submit">Login</button>
+    <h1>INVENTORY MANAGEMENT SYSTEM</h1>
+    {% if 'username' in session %}
+    Welcome, {{ session['username'] }}!
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity in Stock</th>
+                <th>Quantity Sold</th>
+                <th>Quantity Left</th>
+                <th>Price (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>
+                    <input type="number" value="{{ item.quantity_in_stock }}" readonly>
+                </td>
+                <td> 
+                    <input type="number" value="{{ item.quantity_sold }}" readonly>
+                </td>
+                <td>{{ item.quantity_left }}</td>
+                <td>{{ item.price }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="btn-container">
+        <form action="{{ url_for('generate_report') }}" method="get" target="_blank">
+            <button type="submit">Generate Stock Report</button>
+        </form>
+    </div>
+    {% endif %}
+    <div class="form-container">
+        <h2>Add Item</h2>
+        <form action="{{ url_for('add_item') }}" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="quantity_in_stock">Quantity in Stock:</label>
+            <input type="number" id="quantity_in_stock" name="quantity_in_stock" required>
+            <label for="price">Price (KES):</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
+    <!-- Sales Table -->
+    <h2>Items Sold</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity Sold</th>
+                <th>Price Per Item (KES)</th>
+                <th>Total Cost (KES)</th>
+                <th>Date Sold</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            {% if item.quantity_sold > 0 %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity_sold }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.quantity_sold * item.price }}</td>
+                <td>{{ item.date_sold }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="btn-container">
+        <form action="{{ url_for('generate_sales_report') }}" method="get" target="_blank">
+            <button type="submit">Generate Sales Report</button>
         </form>
     </div>
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
