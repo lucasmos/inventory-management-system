@@ -4,7 +4,7 @@ from reportlab.pdfgen import canvas
 import io
 from datetime import datetime, timedelta
 
-app = Flask(__name__, static_url_path='/styles.css')
+app = Flask(__name__)
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
 app.secret_key = 'your_secret_key'  # Replace with your own secret key
