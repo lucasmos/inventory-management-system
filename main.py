@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, make_response, redirect, session, url_for
+from flask import Flask, render_template, request, make_response, redirect, session
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
@@ -46,7 +46,7 @@ def index():
     if 'username' in session:
         return render_template('index.html', inventory=inventory)
     else:
-        return redirect(url_for('login'))
+        return redirect('/login')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -56,7 +56,7 @@ def login():
         password = request.form['password']
         if username == USERNAME and password == PASSWORD:
             session['username'] = username
-            return redirect(url_for('index'))  # Redirect to index page after successful login
+            return redirect('/index')  # Redirect to index page after successful login
         else:
             error = "Invalid username or password. Please try again."
     return render_template('login.html', error=error)
@@ -64,7 +64,7 @@ def login():
 @app.route('/logout', methods=['POST'])
 def logout():
     session.pop('username', None)
-    return redirect(url_for('login'))
+    return redirect('/login')
 
 def prevent_data_loss():
     with open("inventory.txt", "w") as file:
