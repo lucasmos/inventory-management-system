@@ -8,7 +8,6 @@
 </head>
 <body>
     <h1>INVENTORY MANAGEMENT SYSTEM</h1>
-    {% if 'username' in session %}
     <p>Welcome, {{ session['username'] }}! <form action="/logout" method="post">
         <button type="submit">Logout</button>
     </form></p>
