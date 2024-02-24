@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, make_response, redirect, session, url_for
+from flask import Flask, render_template, request, make_response, redirect, session, url_for, flash
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
 from datetime import datetime, timedelta
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_url_path='/static')
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
-app.secret_key = 'your_secret_key'  # Replace with your own secret key
+app.secret_key = os.urandom(24)  # Generate a random secret key
 
 # Sample username and password (replace with your own authentication mechanism)
 USERNAME = "papa"
@@ -54,11 +55,13 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+
         if username == USERNAME and password == PASSWORD:
             session['username'] = username
             return redirect(url_for('index'))  # Redirect to index page after successful login
         else:
             error = "Invalid username or password. Please try again."
+
     return render_template('login.html', error=error)
 
 @app.route('/logout', methods=['POST'])
@@ -82,13 +85,17 @@ def add_item():
     name = request.form['name']
     quantity_in_stock = int(request.form['quantity_in_stock'])
     price = float(request.form['price'])
+
     if not prevent_redundancy(name):
         item_id = len(inventory) + 1
         item = {"id": item_id, "name": name, "quantity_in_stock": quantity_in_stock, "quantity_sold": 0, "price": price}
         item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
         inventory.append(item)
-    prevent_data_loss()
-    return render_template('index.html', inventory=inventory)
+        prevent_data_loss()
+
+        flash('Item added successfully.', 'success')
+
+    return redirect(url_for('index'))
 
 @app.route('/delete_item/<int:item_id>', methods=['POST', 'DELETE'])
 def delete_item(item_id):
@@ -98,21 +105,31 @@ def delete_item(item_id):
                 inventory.remove(item)
                 break
         prevent_data_loss()
-        return render_template('index.html', inventory=inventory)
-    else:
-        return "Method Not Allowed", 405
+
+        flash('Item deleted successfully.', 'success')
+
+    return redirect(url_for('index'))
 
 @app.route('/update', methods=['POST'])
 def update_quantity():
     item_id = int(request.form['item_id'])
     quantity_sold = int(request.form['quantity_sold'])
+
     for item in inventory:
         if item['id'] == item_id:
-            item['quantity_sold'] += quantity_sold
-            item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
+            if item['quantity_left'] >= quantity_sold:
+                item['quantity_sold'] += quantity_sold
+                item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
+                prevent_data_loss()
+
+                flash('Item quantity updated successfully.', 'success')
+
+            else:
+                flash('Insufficient stock.', 'danger')
+
             break
-    prevent_data_loss()
-    return render_template('index.html', inventory=inventory)
+
+    return redirect(url_for('index'))
 
 @app.route('/generate_report')
 def generate_report():
