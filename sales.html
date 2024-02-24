@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Items Sold</title>
+  <!-- Include the CSS file for styling -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <!-- Start of the table -->
+  <table>
+    <!-- Table header -->
+    <thead>
+      <tr>
+        <!-- Table header cells -->
+        <th>Item Name</th>
+        <th>Quantity Sold</th>
+        <th>Price Per Item (KES)</th>
+        <th>Total Cost (KES)</th>
+        <th>Date Sold</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <!-- Table body -->
+    <tbody>
+      <!-- Loop through the inventory items -->
+      {% for item in inventory %}
+      <tr>
+        <!-- Display the item name -->
+        <td>{{ item.name }}</td>
+        <!-- Display the quantity sold -->
+        <td>{{ item.quantity_sold }}</td>
+        <!-- Display the price per item -->
+        <td>{{ item.price }}</td>
+        <!-- Calculate and display the total cost -->
+        <td>{{ item.quantity_sold * item.price }}</td>
+        <!-- Display the date sold -->
+        <td>{{ item.date_sold }}</td>
+        <!-- Action column -->
+        <td>
+          <!-- Delete item form -->
+          <form action="/delete_item/{{ item.id }}" method="post">
+            <!-- Hidden input field for the DELETE method -->
+            <input type="hidden" name="_method" value="DELETE">
+            <!-- Delete button -->
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <!-- Generate sales report button -->
+  <div class="btn-container">
+    <form action="{{ url_for('generate_sales_report') }}" method="get" target="_blank">
+      <button type="submit">Generate Sales Report</button>
+    </form>
+  </div>
+  <!-- Include the JavaScript file for scripting -->
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

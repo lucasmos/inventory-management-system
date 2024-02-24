@@ -1,0 +1,62 @@
+</DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charsetUTF-8>
+ <meta name="port" content="=device-width, initial-scale=1.0">
+    <title>Hardware Shop Inventory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>INVENTORY MANAGEMENT SYSTEM</h1>
+    {% if 'username' in session %}
+    <p>Welcome, {{ session['username'] }}!
+        <form action="/logout" method="post">
+            <button type="submit">Logout</button>
+        </form>
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity in Stock</th>
+                <th>Quantity Sold</th>
+                <th>Quantity Left</th>
+                <th>Price (KES)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>
+                    <form action="{{ url_for('update_quantity') }}" method="post">
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <input type="number" name="quantity_in_stock" value="{{ item.quantity_in_stock }}" required>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+                <td>
+                    <form action="{{ url_for('update_quantity') }}" method="post">
+                        <input type="hidden" name="item_id" value="{{ item.id }}">
+                        <input type="number" name="quantity_sold" value="{{ item.quantity_sold }}" required>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+                <td>{{ item.quantity_left }}</td>
+                <td>{{ item.price }}</td>
+                <td>
+                    <form action="/delete_item/{{ item.id }}" method="post">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="btn-container">
+        <form action="{{ url_for('generate_report') }}" method="get" target="_blank">
+            <button type="submit">Generate Stock Report</button>
+        </form>
+    </div>
+    {% endif %}
