@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    <link rel="stylesheet" href="static/styles.css" />
+    </head>
+<body>
+    <h1>Inventory Management System</h1>
+    {% if 'username' in session %}
+    <p>Welcome, {{ session['username'] }}!</p>
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+
+    <!-- Stock Item Table -->
+    <h2>Stock Items</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity in Stock</th>
+                <th>Quantity Sold</th>
+                <th>Quantity Left</th>
+                <th>Price (KES)</th>
+                <th>Update Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity_in_stock }}</td>
+                <td>{{ item.quantity_sold }}</td>
+                <td>{{ item.quantity_left }}</td>
+                <td>
+                    <form action="/update_price/{{ item.id }}" method="post">
+                        <input type="number" name="price" value="{{ item.price }}" step="0.01" required>
+                        <button type="submit">Update</button>
+                    </form>
+                </td>
+                <td>
+                    <!-- Optional: Add buttons for other actions like updating quantity -->
+                </td>
+                <td>
+                    <form action="/delete_item/{{ item.id }}" method="post">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Sales Table -->
+    <h2>Sales</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity Sold</th>
+                <th>Price Per Item (KES)</th>
+                <th>Total Cost (KES)</th>
+                <th>Date Sold</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in inventory %}
+            {% if item.quantity_sold > 0 %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>{{ item.quantity_sold }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.quantity_sold * item.price }}</td>
+                <td>{{ item.date_sold }}</td>
+                <td>
+                    <form action="/delete_item/{{ item.id }}" method="post">
+                        <input type="hidden" name="_method" value="DELETE">
+                        <button type="submit">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="btn-container">
+        <form action="{{ url_for('generate_report') }}" method="get" target="_blank">
+            <button type="submit">Generate Stock Report</button>
+        </form>
+    </div>
+
+    <div class="form-container">
+        <h2>Add Item</h2>
+        <form action="{{ url_for('add_item') }}" method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+            <label for="quantity_in_stock">Quantity in Stock:</label>
+            <input type="number" id="quantity_in_stock" name="quantity_in_stock" required>
+            <label for="price">Price (KES):</label>
+            <input type="number" id="price" name="price" step="0.01" required>
+            <button type="submit">Add</button>
+        </form>
+    </div>
+
+    <div class="btn-container">
+        <form action="{{ url_for('generate_sales_report') }}" method="get" target="_blank">
+            <button type="submit">Generate Sales Report</button>
+        </form>
+    </div>
+
+    {% else %}
+    <p>You need to login first.</p>
+    {% endif %}
+</body>
+</html>
