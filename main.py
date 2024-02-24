@@ -2,15 +2,16 @@ from flask import Flask, render_template, request, make_response, redirect, sess
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import io
-from datetime import datetime, timedelta
 import os
+from datetime import datetime, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_url_path='/static')
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(minutes=10)
 app.secret_key = os.urandom(24)
 
 USERNAME = "papa"
-PASSWORD = "1234"
+PASSWORD = generate_password_hash("1234")
 
 INVENTORY_FILE = "inventory.txt"
 
@@ -31,7 +32,8 @@ def load_inventory():
                     "name": data[0],
                     "quantity_in_stock": int(data[1]),
                     "quantity_sold": int(data[2]),
-                    "price": float(data[4])
+                    "price": float(data[4]),
+                    "total_sales": 0
                 }
                 item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
                 inventory.append(item)
@@ -39,16 +41,16 @@ def load_inventory():
         pass
     return inventory
 
-def prevent_redundancy(name):
+def prevent_redundancy(name, inventory):
     for item in inventory:
         if item['name'].lower() == name.lower():
             return True
     return False
 
-def prevent_data_loss():
+def prevent_data_loss(inventory):
     with open(INVENTORY_FILE, "w") as file:
         for item in inventory:
-            file.write(f"{item['name']},{item['quantity_in_stock']},{item['quantity_sold']},{item['quantity_left']},{item['price']}\n")
+            file.write(f"{item['name']},{item['quantity_in_stock']},{item['quantity_sold']},{item['quantity_left']},{item['price']},{item['total_sales']}\n")
 
 def create_pdf_report(inventory):
     buffer = io.BytesIO()
@@ -131,7 +133,7 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username == USERNAME and password == PASSWORD:
+        if username == USERNAME and check_password_hash(PASSWORD, password):
             session['username'] = username
             return redirect(url_for('index'))
         else:
@@ -148,13 +150,15 @@ def add_item():
     name = request.form['name']
     quantity_in_stock = int(request.form['quantity_in_stock'])
     price = float(request.form['price'])
-    if not prevent_redundancy(name):
+    if prevent_redundancy(name, inventory):
+        return "Error: Item already exists in inventory."
+    else:
         item_id = len(inventory) + 1
-        item = {"id": item_id, "name": name, "quantity_in_stock": quantity_in_stock, "quantity_sold": 0, "price": price}
+        item = {"id": item_id, "name": name, "quantity_in_stock": quantity_in_stock, "quantity_sold": 0, "price": price, "total_sales": 0}
         item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
         inventory.append(item)
-        prevent_data_loss()
-    return redirect(url_for('index'))
+        prevent_data_loss(inventory)
+        return redirect(url_for('index'))
 
 @app.route('/delete_item/<int:item_id>', methods=['POST', 'DELETE'])
 def delete_item(item_id):
@@ -163,7 +167,7 @@ def delete_item(item_id):
             if item['id'] == item_id:
                 inventory.remove(item)
                 break
-        prevent_data_loss()
+        prevent_data_loss(inventory)
         return redirect(url_for('index'))
     else:
         return "Method Not Allowed", 405
@@ -174,10 +178,14 @@ def update_quantity():
     quantity_sold = int(request.form['quantity_sold'])
     for item in inventory:
         if item['id'] == item_id:
-            item['quantity_sold'] += quantity_sold
-            item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
-            break
-    prevent_data_loss()
+            if item['quantity_in_stock'] >= quantity_sold:
+                item['quantity_sold'] += quantity_sold
+                item['quantity_left'] = item['quantity_in_stock'] - item['quantity_sold']
+                item['total_sales'] += quantity_sold * item['price']
+                prevent_data_loss(inventory)
+                break
+            else:
+                return "Error: Not enough items in stock."
     return redirect(url_for('index'))
 
 @app.route('/generate_report')
