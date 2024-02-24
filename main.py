@@ -97,11 +97,14 @@ def create_sales_pdf_report(inventory):
     total_cost = 0
     y_position = 680
     for item in inventory:
-        if item['quantity_sold'] > 0:
-            c.drawString(50, y_position, item['name'])
-            c.drawString(200, y_position, str(item['quantity_sold']))
-            c.drawString(300, y_position, "{:.2f} KES".format(item['price']))
-            total_item_cost = item['quantity_sold'] * item['price']
+        quantity_sold = item.get('quantity_sold', 0)
+        name = item.get('name')
+        price = item.get('price')
+        if quantity_sold > 0 and name is not None and price is not None:
+            c.drawString(50, y_position, name)
+            c.drawString(200, y_position, str(quantity_sold))
+            c.drawString(300, y_position, "{:.2f} KES".format(price))
+            total_item_cost = quantity_sold * price
             total_cost += total_item_cost
             c.drawString(400, y_position, "{:.2f} KES".format(total_item_cost))
             c.drawString(500, y_position, datetime.now().strftime("%Y-%m-%d"))
